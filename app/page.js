@@ -120,8 +120,8 @@ function AnimatedSymbol({ game }) {
   if (game === "droneArena") return <Drone3D />;
   if (game === "vr") return <VR3D />;
   if (game === "robotSoccer") return <Robot3D />;
-  if (game === "droneTrack") return <img src="/assets/drone-arena.png" alt="Drone arena track" className="symbolImage" />;
-  return <img src="/assets/robot-soccer.png" alt="Board robot soccer" className="symbolImage" />;
+  if (game === "droneTrack") return <img src="/assets/drone-track.svg" alt="Drone time track" className="symbolImage" />;
+  return <img src="/assets/ice-hockey.png" alt="Board ice hockey" className="symbolImage" />;
 }
 
 function LoginPanel({ onSuccess, onClose }) {
