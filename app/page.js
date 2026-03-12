@@ -263,6 +263,30 @@ export default function Page() {
     }
   };
 
+  const loadEntryForEdit = (entry) => {
+    setForm({
+      playerId: entry.playerId,
+      playerName: entry.playerName,
+      game: entry.game,
+      metricValues: buildMetricValues(entry.game, entry.metrics || {})
+    });
+    setAdminOpen(true);
+  };
+
+  const deleteEntryDirect = async (entry) => {
+    if (!window.confirm(`Delete ${entry.playerName} (${entry.playerId})?`)) return;
+    try {
+      const encodedId = encodeURIComponent(`${entry.game}__${entry.playerId.toUpperCase()}`);
+      await safeFetch(`/api/entries/${encodedId}`, { method: "DELETE", timeoutMs: 10000 });
+      setStatus(`Deleted ${entry.playerName}.`);
+      setStatusError(false);
+      await refresh();
+    } catch (error) {
+      setStatus(`Delete failed: ${error.message}`);
+      setStatusError(true);
+    }
+  };
+
   const handleAdminClick = () => {
     if (isAdmin) {
       setAdminOpen((v) => !v);
@@ -348,6 +372,7 @@ export default function Page() {
             <div>Player</div>
             <div>Score</div>
             <div>Updated</div>
+            {isAdmin && <div>Actions</div>}
           </div>
           {ranked.map((entry, idx) => (
             <div className="row body" key={`${entry.game}-${entry.playerId}`}>
@@ -356,6 +381,20 @@ export default function Page() {
               <div>{entry.playerName}</div>
               <div style={{ color: gameMeta.accent, fontWeight: 700 }}>{entry.score}</div>
               <div>{entry.updatedAt ? new Date(entry.updatedAt).toLocaleTimeString() : "-"}</div>
+              {isAdmin && (
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button
+                    className="adminButton"
+                    style={{ padding: "2px 10px", fontSize: "0.75rem" }}
+                    onClick={() => loadEntryForEdit(entry)}
+                  >Edit</button>
+                  <button
+                    className="warn"
+                    style={{ padding: "2px 10px", fontSize: "0.75rem" }}
+                    onClick={() => deleteEntryDirect(entry)}
+                  >Del</button>
+                </div>
+              )}
             </div>
           ))}
           {!ranked.length && <div className="row body">No entries available for this game.</div>}
