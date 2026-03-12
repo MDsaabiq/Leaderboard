@@ -371,7 +371,7 @@ export default function Page() {
             <div>ID</div>
             <div>Player</div>
             <div>Score</div>
-            <div>Updated</div>
+            <div className="hideOnMobile">Updated</div>
             {isAdmin && <div>Actions</div>}
           </div>
           {ranked.map((entry, idx) => (
@@ -380,7 +380,7 @@ export default function Page() {
               <div>{entry.playerId}</div>
               <div>{entry.playerName}</div>
               <div style={{ color: gameMeta.accent, fontWeight: 700 }}>{entry.score}</div>
-              <div>{entry.updatedAt ? new Date(entry.updatedAt).toLocaleTimeString() : "-"}</div>
+              <div className="hideOnMobile">{entry.updatedAt ? new Date(entry.updatedAt).toLocaleTimeString() : "-"}</div>
               {isAdmin && (
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button

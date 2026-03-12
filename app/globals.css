@@ -118,20 +118,21 @@ body {
 .banner {
   border-radius: 18px;
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 16px;
+  grid-template-columns: clamp(280px, 30vw, 420px) 1fr;
+  gap: 20px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.34), rgba(255, 255, 255, 0.04));
   backdrop-filter: blur(8px);
-  padding: 16px;
+  padding: 18px;
   margin-bottom: 16px;
-  min-height: 180px;
+  min-height: 250px;
 }
 
 .symbol3d {
   border-radius: 16px;
   position: relative;
   overflow: hidden;
+  height: 220px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
   box-shadow: inset 0 0 36px rgba(255, 255, 255, 0.1), 0 24px 50px rgba(0, 0, 0, 0.45);
 }
@@ -140,6 +141,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
 }
 
 .scene {
@@ -155,7 +157,8 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.06);
+  object-position: center;
+  transform: scale(1);
 }
 
 .sceneGlow {
@@ -530,16 +533,162 @@ button.warn {
   50% { opacity: 0.35; }
 }
 
+/* ── Tablet ──────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .banner { grid-template-columns: 1fr; }
+  .banner {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .symbol3d {
+    height: 220px;
+  }
 
   .row {
-    grid-template-columns: 52px 80px 1fr 86px 92px;
+    grid-template-columns: 44px 72px 1fr 80px 88px;
     font-size: 14px;
   }
 
   .grid2,
   .grid3 {
     grid-template-columns: 1fr;
+  }
+
+  .podium {
+    gap: 8px;
+  }
+}
+
+/* ── Mobile ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .page {
+    padding: 12px 10px 32px;
+  }
+
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .topBar .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .titleBlock p {
+    font-size: 14px;
+  }
+
+  /* Tabs: scroll horizontally instead of wrapping */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    gap: 8px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  /* Banner: image on top, text below */
+  .banner {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 10px;
+    min-height: unset;
+  }
+
+  .symbol3d {
+    height: 240px;
+  }
+
+  .banner h2 {
+    font-size: clamp(22px, 7vw, 34px);
+  }
+
+  .banner p {
+    font-size: 16px;
+  }
+
+  /* Podium: horizontal scroll on very small screens */
+  .podium {
+    grid-template-columns: repeat(3, minmax(90px, 1fr));
+    gap: 6px;
+  }
+
+  .podiumCard {
+    padding: 10px 6px;
+    transform: none;
+  }
+
+  .podiumCard:hover {
+    transform: translateY(-2px);
+  }
+
+  .podiumCard h3 {
+    font-size: clamp(14px, 3.5vw, 20px);
+  }
+
+  .podiumCard strong {
+    font-size: clamp(22px, 6vw, 36px);
+  }
+
+  /* Table: compact columns, hide Updated, Actions become icons */
+  .row {
+    grid-template-columns: 32px 56px 1fr 64px;
+    font-size: 13px;
+    padding: 8px 8px;
+    gap: 4px;
+  }
+
+  /* Hide Updated column on mobile */
+  .row > div:nth-child(5):not(.actions-cell) {
+    display: none;
+  }
+
+  /* Admin action buttons in rows */  
+  .row > div:last-child {
+    gap: 4px;
+  }
+
+  .adminButton,
+  button.warn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .drawer {
+    padding: 12px;
+  }
+
+  .drawer h3 {
+    font-size: 18px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 15px;
+    padding: 9px 10px;
+  }
+
+  .loginCard {
+    padding: 14px;
+  }
+
+  .status {
+    font-size: 13px;
+  }
+
+  .hideOnMobile {
+    display: none;
   }
 }
