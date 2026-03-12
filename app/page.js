@@ -14,7 +14,27 @@ const FALLBACK_DATA = [
 ];
 
 function byGameAndScore(entries, game) {
-  return entries.filter((item) => item.game === game).sort((a, b) => b.score - a.score);
+  return entries
+    .filter((item) => item.game === game)
+    .sort((a, b) => {
+      const scoreOrder = (Number(b.score) || 0) - (Number(a.score) || 0);
+      if (scoreOrder !== 0) return scoreOrder;
+
+      const aTime = a.updatedAt ? Date.parse(a.updatedAt) : 0;
+      const bTime = b.updatedAt ? Date.parse(b.updatedAt) : 0;
+      const timeOrder = bTime - aTime;
+      if (timeOrder !== 0) return timeOrder;
+
+      return String(a.playerName || "").localeCompare(String(b.playerName || ""));
+    });
+}
+
+function buildMetricValues(gameId, current = {}) {
+  return METRICS[gameId].reduce((acc, key) => {
+    const raw = current?.[key];
+    acc[key] = raw === undefined || raw === null || raw === "" ? 0 : Number(raw);
+    return acc;
+  }, {});
 }
 
 async function safeFetch(url, options = {}) {
@@ -100,8 +120,8 @@ function AnimatedSymbol({ game }) {
   if (game === "droneArena") return <Drone3D />;
   if (game === "vr") return <VR3D />;
   if (game === "robotSoccer") return <Robot3D />;
-  if (game === "droneTrack") return <img src="/assets/drone-arena.png" alt="Drone track" className="symbolImage" />;
-  return <img src="/assets/robot-soccer.png" alt="Ice hockey" className="symbolImage" />;
+  if (game === "droneTrack") return <img src="/assets/drone-arena.png" alt="Drone arena track" className="symbolImage" />;
+  return <img src="/assets/robot-soccer.png" alt="Board robot soccer" className="symbolImage" />;
 }
 
 function LoginPanel({ onSuccess, onClose }) {
@@ -163,8 +183,7 @@ export default function Page() {
     playerId: "",
     playerName: "",
     game: "droneArena",
-    score: 0,
-    metricsText: "{}"
+    metricValues: buildMetricValues("droneArena", { score: 0 })
   });
 
   const refresh = async () => {
@@ -201,7 +220,7 @@ export default function Page() {
 
   const submitEntry = async () => {
     try {
-      const parsedMetrics = JSON.parse(form.metricsText || "{}");
+      const scoreValue = Number(form.metricValues.score || 0);
       await safeFetch("/api/entries", {
         method: "POST",
         timeoutMs: 10000,
@@ -210,8 +229,8 @@ export default function Page() {
           playerId: form.playerId,
           playerName: form.playerName,
           game: form.game,
-          score: Number(form.score),
-          metrics: parsedMetrics
+          score: scoreValue,
+          metrics: form.metricValues
         })
       });
 
@@ -347,7 +366,16 @@ export default function Page() {
             <div className="grid2">
               <label>
                 Game
-                <select value={form.game} onChange={(event) => setForm((old) => ({ ...old, game: event.target.value }))}>
+                <select
+                  value={form.game}
+                  onChange={(event) =>
+                    setForm((old) => ({
+                      ...old,
+                      game: event.target.value,
+                      metricValues: buildMetricValues(event.target.value, old.metricValues)
+                    }))
+                  }
+                >
                   {GAME_ORDER.map((id) => (
                     <option key={id} value={id}>{GAMES[id].title}</option>
                   ))}
@@ -355,7 +383,7 @@ export default function Page() {
               </label>
             </div>
 
-            <div className="grid3">
+            <div className="grid2">
               <label>
                 Player ID
                 <input value={form.playerId} onChange={(event) => setForm((old) => ({ ...old, playerId: event.target.value }))} placeholder="P101" />
@@ -364,16 +392,28 @@ export default function Page() {
                 Player Name
                 <input value={form.playerName} onChange={(event) => setForm((old) => ({ ...old, playerName: event.target.value }))} placeholder="Player name" />
               </label>
-              <label>
-                Score
-                <input type="number" value={form.score} onChange={(event) => setForm((old) => ({ ...old, score: Number(event.target.value) }))} />
-              </label>
             </div>
 
-            <label>
-              Metrics JSON
-              <textarea rows={4} value={form.metricsText} onChange={(event) => setForm((old) => ({ ...old, metricsText: event.target.value }))} />
-            </label>
+            <div className="grid2">
+              {METRICS[form.game].map((metric) => (
+                <label key={metric}>
+                  {metric}
+                  <input
+                    type="number"
+                    value={form.metricValues[metric] ?? 0}
+                    onChange={(event) =>
+                      setForm((old) => ({
+                        ...old,
+                        metricValues: {
+                          ...old.metricValues,
+                          [metric]: Number(event.target.value)
+                        }
+                      }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
 
             <div className="actions">
               <button className="cta" onClick={submitEntry}>Save or Update Entry</button>
