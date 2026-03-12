@@ -117,9 +117,14 @@ function VR3D() {
 }
 
 function AnimatedSymbol({ game }) {
-  if (game === "droneArena") return <Drone3D />;
+  if (game === "droneArena") return (
+    <div className="scene sceneVr" aria-label="Drone Arena">
+      <img src="https://www.roboticgizmos.com/wp-content/uploads/2021/06/30/Building-a-Large-Indoor-Drone-Testing-Arena.gif" alt="Drone Arena" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+      <div className="sceneGlow" />
+    </div>
+  );
   if (game === "vr") return <VR3D />;
-  if (game === "robotSoccer") return <Robot3D />;
+  if (game === "robotSoccer") return <img src="/assets/robot-soccer.png" alt="Robot Soccer" className="symbolImage" />;
   if (game === "droneTrack") return <img src="/assets/drone-track.svg" alt="Drone time track" className="symbolImage" />;
   return <img src="/assets/ice-hockey.png" alt="Board ice hockey" className="symbolImage" />;
 }
@@ -308,7 +313,7 @@ export default function Page() {
             const g = GAMES[id];
             const active = id === game;
             return (
-              <button key={id} className={`tab ${active ? "active" : ""}`} style={{ borderColor: active ? g.accent : "rgba(255,255,255,.2)", boxShadow: active ? `0 0 24px ${g.accent}55` : "none" }} onClick={() => setGame(id)}>
+              <button key={id} className={`tab ${active ? "active" : ""}`} style={{ borderColor: active ? g.accent : "rgba(255,255,255,.2)", boxShadow: active ? `0 0 24px ${g.accent}55` : "none" }} onClick={() => { setGame(id); setForm((old) => ({ ...old, game: id, metricValues: buildMetricValues(id, old.metricValues) })); }}>
                 <span>{g.short}</span>
                 <strong>{entries.filter((entry) => entry.game === id).length}</strong>
               </button>
