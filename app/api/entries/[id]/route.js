@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 import { createRequestId, logError, logInfo } from "@/lib/logger";
-
-function checkAdminSecret(request) {
-  const provided = request.headers.get("x-admin-secret");
-  return Boolean(process.env.ADMIN_SECRET && provided === process.env.ADMIN_SECRET);
-}
+import { isAuthorizedRequest } from "@/lib/admin-auth";
 
 export async function DELETE(request, { params }) {
   const requestId = createRequestId();
 
-  if (!checkAdminSecret(request)) {
+  if (!isAuthorizedRequest(request)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

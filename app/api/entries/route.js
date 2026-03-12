@@ -3,17 +3,13 @@ import { getCollection } from "@/lib/mongodb";
 import { createRequestId, logError, logInfo } from "@/lib/logger";
 import { GAME_ORDER } from "@/lib/game-config";
 import { normalizeEntry, validateEntry } from "@/lib/validation";
+import { isAuthorizedRequest } from "@/lib/admin-auth";
 
 function unauthorized() {
   return NextResponse.json(
     { ok: false, error: "Unauthorized" },
     { status: 401 }
   );
-}
-
-function checkAdminSecret(request) {
-  const provided = request.headers.get("x-admin-secret");
-  return Boolean(process.env.ADMIN_SECRET && provided === process.env.ADMIN_SECRET);
 }
 
 export async function GET(request) {
@@ -42,7 +38,7 @@ export async function GET(request) {
 export async function POST(request) {
   const requestId = createRequestId();
 
-  if (!checkAdminSecret(request)) {
+  if (!isAuthorizedRequest(request)) {
     logInfo("entries_post_unauthorized", { requestId });
     return unauthorized();
   }

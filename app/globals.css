@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Audiowide&family=Rajdhani:wght@400;500;600;700&display=swap");
 
 :root {
-  --bg: #04101b;
-  --panel: rgba(5, 20, 32, 0.8);
+  --bg: #030a14;
+  --panel: rgba(5, 20, 32, 0.75);
   --glass: rgba(255, 255, 255, 0.06);
   --text: #eef8ff;
   --muted: #9bb7c9;
@@ -19,7 +19,7 @@ body {
   padding: 0;
   font-family: "Rajdhani", sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at 20% 15%, #0f2e46 0%, #04101b 45%, #02070e 100%);
+  background: radial-gradient(circle at 24% 14%, #143d58 0%, #07111e 46%, #02060d 100%);
   min-height: 100%;
 }
 
@@ -48,15 +48,27 @@ body {
 }
 
 .page::before {
-  background: conic-gradient(from 0deg, rgba(0, 228, 255, 0.06), rgba(137, 255, 91, 0.03), rgba(255, 163, 63, 0.06), rgba(0, 228, 255, 0.06));
-  animation: spinBg 22s linear infinite;
+  background: conic-gradient(from 0deg, rgba(0, 228, 255, 0.05), rgba(137, 255, 91, 0.03), rgba(255, 163, 63, 0.06), rgba(0, 228, 255, 0.05));
+  animation: spinBg 30s linear infinite;
 }
 
 .page::after {
   background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 42px 42px;
-  transform: perspective(450px) rotateX(62deg) translateY(20%);
-  opacity: 0.3;
+  background-size: 40px 40px;
+  transform: perspective(520px) rotateX(64deg) translateY(18%);
+  opacity: 0.28;
+}
+
+.ambientLight {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(0, 228, 255, 0.2), transparent 70%);
+  top: -140px;
+  right: 6%;
+  filter: blur(8px);
+  animation: drift 6s ease-in-out infinite;
 }
 
 .shell {
@@ -81,6 +93,7 @@ body {
   font-size: clamp(30px, 5.4vw, 74px);
   line-height: 0.95;
   background: linear-gradient(120deg, #d6f8ff, #00e4ff 45%, #89ff5b 80%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 24px rgba(0, 228, 255, 0.45));
@@ -105,55 +118,169 @@ body {
 .banner {
   border-radius: 18px;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 16px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.34), rgba(255, 255, 255, 0.04));
   backdrop-filter: blur(8px);
   padding: 16px;
   margin-bottom: 16px;
-  min-height: 164px;
+  min-height: 180px;
 }
 
 .symbol3d {
   border-radius: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.08), 0 20px 48px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 0 36px rgba(255, 255, 255, 0.1), 0 24px 50px rgba(0, 0, 0, 0.45);
 }
 
-.symbol3d img {
+.symbolImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.symbol3d::before {
-  content: "";
+.scene {
   position: absolute;
-  inset: -35%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), transparent 52%);
-  animation: pulseHalo 3.2s ease-in-out infinite;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  animation: hover3d 3.2s ease-in-out infinite;
 }
 
-.orbitRing {
+.scene img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+}
+
+.sceneGlow {
   position: absolute;
-  inset: 8px;
-  border-radius: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.24);
-  animation: orbit 5s linear infinite;
+  inset: 8%;
+  border-radius: 12px;
+  box-shadow: inset 0 0 28px rgba(255, 255, 255, 0.22), 0 0 30px rgba(0, 228, 255, 0.3);
+  pointer-events: none;
+}
+
+.sceneDrone {
+  animation-delay: -0.5s;
+}
+
+.sceneRobot {
+  animation-delay: -1s;
+}
+
+.sceneVr {
+  animation-delay: -0.25s;
+}
+
+.metalBody {
+  fill: #1f2d3a;
+  stroke: #7de7ff;
+  stroke-width: 2;
+}
+
+.glassPanel {
+  fill: #58d8ff44;
+  stroke: #8ef6ff;
+  stroke-width: 1.4;
+}
+
+.armLine {
+  stroke: #89eeff88;
+  stroke-width: 2.5;
+}
+
+.prop ellipse {
+  fill: #00e4ff22;
+  stroke: #8df7ff;
+  stroke-width: 1;
+}
+
+.propA,
+.propC {
+  animation: spinFast 0.18s linear infinite;
+  transform-origin: center;
+}
+
+.propB,
+.propD {
+  animation: spinFast 0.18s linear infinite reverse;
+  transform-origin: center;
+}
+
+.eyeL,
+.eyeR {
+  fill: #ffb55a;
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+.robotTorso {
+  fill: #1a140e;
+  stroke: #f2a04b;
+  stroke-width: 1.8;
+}
+
+.robotArm {
+  fill: #2c2010;
+  stroke: #f2a04b;
+  stroke-width: 1.5;
+}
+
+.leftArm {
+  transform-origin: 36px 40px;
+  animation: armSwing 1.5s ease-in-out infinite;
+}
+
+.rightArm {
+  transform-origin: 84px 40px;
+  animation: armSwing 1.5s ease-in-out infinite reverse;
+}
+
+.soccerBall {
+  fill: #ffffff;
+  stroke: #182029;
+  stroke-width: 2;
+  animation: ballBounce 1.1s ease-in-out infinite;
+}
+
+.vrShell {
+  fill: #122630;
+  stroke: #7ef76f;
+  stroke-width: 2;
+}
+
+.vrLensA {
+  fill: #8cff5e44;
+  stroke: #8cff5e;
+}
+
+.vrLensB {
+  fill: #3be1ff44;
+  stroke: #3be1ff;
+}
+
+.vrBand {
+  stroke: #8cff5e;
+  stroke-width: 2;
+  fill: none;
 }
 
 .banner h2 {
   margin: 4px 0;
   font-family: "Audiowide", sans-serif;
-  font-size: clamp(26px, 4vw, 50px);
+  font-size: clamp(30px, 4.2vw, 56px);
+  text-shadow: 0 0 22px rgba(0, 228, 255, 0.45);
 }
 
 .banner p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .tabs {
@@ -177,8 +304,7 @@ body {
 }
 
 .tab.active {
-  transform: translateY(-1px);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .podium {
@@ -192,9 +318,20 @@ body {
 .podiumCard {
   border-radius: 16px 16px 8px 8px;
   padding: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.03));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
   border: 1px solid rgba(255, 255, 255, 0.24);
   text-align: center;
+  transform: perspective(600px) rotateX(5deg);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease;
+}
+
+.podiumCard:hover {
+  transform: perspective(600px) rotateX(2deg) translateY(-4px);
+}
+
+.podiumCard.champ {
+  transform: perspective(600px) rotateX(2deg) scale(1.02);
 }
 
 .podiumCard h3 {
@@ -309,6 +446,25 @@ button.warn {
   color: var(--muted);
 }
 
+.loginOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 30;
+}
+
+.loginCard {
+  width: min(460px, 92vw);
+  border-radius: 16px;
+  border: 1px solid rgba(138, 255, 102, 0.6);
+  background: rgba(6, 16, 26, 0.94);
+  padding: 16px;
+  box-shadow: 0 0 30px rgba(138, 255, 102, 0.25);
+}
+
 .loaderOrb {
   width: 64px;
   height: 64px;
@@ -339,40 +495,43 @@ button.warn {
   padding: 8px 12px;
 }
 
-@keyframes pulseHalo {
-  0%,
-  100% {
-    opacity: 0.2;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
-}
-
 @keyframes spinBg {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@keyframes orbit {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes drift {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-12px) translateX(-10px); }
+}
+
+@keyframes hover3d {
+  0%, 100% { transform: perspective(520px) rotateX(8deg) rotateY(-10deg) translateY(0px); }
+  50% { transform: perspective(520px) rotateX(4deg) rotateY(10deg) translateY(-8px); }
+}
+
+@keyframes spinFast {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes armSwing {
+  0%, 100% { transform: rotate(-18deg); }
+  50% { transform: rotate(16deg); }
+}
+
+@keyframes ballBounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 @media (max-width: 900px) {
-  .banner {
-    grid-template-columns: 1fr;
-  }
+  .banner { grid-template-columns: 1fr; }
 
   .row {
     grid-template-columns: 52px 80px 1fr 86px 92px;

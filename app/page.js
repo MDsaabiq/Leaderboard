@@ -14,16 +14,15 @@ const FALLBACK_DATA = [
 ];
 
 function byGameAndScore(entries, game) {
-  return entries
-    .filter((item) => item.game === game)
-    .sort((a, b) => b.score - a.score);
+  return entries.filter((item) => item.game === game).sort((a, b) => b.score - a.score);
 }
 
 async function safeFetch(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 8000);
+
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
+    const res = await fetch(url, { ...options, signal: controller.signal, cache: "no-store" });
     const json = await res.json();
     if (!res.ok) {
       throw new Error(json?.error || "Request failed");
@@ -34,33 +33,121 @@ async function safeFetch(url, options = {}) {
   }
 }
 
-function currentSymbol(game) {
-  if (game === "droneArena") {
-    return <img src="/assets/drone-arena.png" alt="Drone arena" />;
-  }
+function Drone3D() {
+  return (
+    <div className="scene sceneDrone" aria-label="3D Drone animation">
+      <svg viewBox="0 0 120 90" width="100%" height="100%">
+        <rect x="38" y="36" width="44" height="20" rx="8" className="metalBody" />
+        <rect x="47" y="40" width="26" height="8" rx="3" className="glassPanel" />
+        <line x1="38" y1="40" x2="22" y2="28" className="armLine" />
+        <line x1="82" y1="40" x2="98" y2="28" className="armLine" />
+        <line x1="38" y1="52" x2="22" y2="64" className="armLine" />
+        <line x1="82" y1="52" x2="98" y2="64" className="armLine" />
+        <g className="prop propA"><ellipse cx="22" cy="28" rx="11" ry="3" /></g>
+        <g className="prop propB"><ellipse cx="98" cy="28" rx="11" ry="3" /></g>
+        <g className="prop propC"><ellipse cx="22" cy="64" rx="11" ry="3" /></g>
+        <g className="prop propD"><ellipse cx="98" cy="64" rx="11" ry="3" /></g>
+      </svg>
+      <div className="sceneGlow" />
+    </div>
+  );
+}
 
-  if (game === "robotSoccer") {
-    return <img src="/assets/robot-soccer.png" alt="Robot soccer" />;
-  }
+function Robot3D() {
+  return (
+    <div className="scene sceneRobot" aria-label="3D Robot animation">
+      <svg viewBox="0 0 120 90" width="100%" height="100%">
+        <rect x="40" y="8" width="40" height="22" rx="6" className="metalBody" />
+        <circle cx="53" cy="18" r="5" className="eyeL" />
+        <circle cx="67" cy="18" r="5" className="eyeR" />
+        <rect x="36" y="32" width="48" height="30" rx="8" className="robotTorso" />
+        <rect x="20" y="36" width="16" height="8" rx="4" className="robotArm leftArm" />
+        <rect x="84" y="36" width="16" height="8" rx="4" className="robotArm rightArm" />
+        <circle cx="48" cy="72" r="8" className="soccerBall" />
+      </svg>
+      <div className="sceneGlow" />
+    </div>
+  );
+}
 
+function VR3D() {
   const vrGif = process.env.NEXT_PUBLIC_VR_GIF_URL;
-  if (vrGif) {
-    return <img src={vrGif} alt="VR gameplay" />;
+  const canUseGif = vrGif && /media\.giphy\.com|media\.tenor\.com|\.gif(\?|$)/i.test(vrGif);
+
+  if (canUseGif) {
+    return (
+      <div className="scene sceneVr" aria-label="VR animation scene">
+        <img src={vrGif} alt="VR Gameplay" />
+        <div className="sceneGlow" />
+      </div>
+    );
   }
 
   return (
-    <svg viewBox="0 0 120 70" width="100%" height="100%" aria-label="VR headset icon">
-      <defs>
-        <linearGradient id="vrg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#89ff5b" />
-          <stop offset="1" stopColor="#00e4ff" />
-        </linearGradient>
-      </defs>
-      <rect x="10" y="18" width="100" height="35" rx="14" fill="#0a1a25" stroke="url(#vrg)" strokeWidth="3" />
-      <circle cx="40" cy="36" r="11" fill="#102c1c" stroke="#89ff5b" />
-      <circle cx="80" cy="36" r="11" fill="#082639" stroke="#00e4ff" />
-      <path d="M10 36c16-20 84-20 100 0" stroke="url(#vrg)" strokeWidth="2" fill="none" />
-    </svg>
+    <div className="scene sceneVr" aria-label="3D VR animation">
+      <svg viewBox="0 0 120 90" width="100%" height="100%">
+        <rect x="16" y="30" width="88" height="30" rx="12" className="vrShell" />
+        <circle cx="42" cy="45" r="10" className="vrLensA" />
+        <circle cx="78" cy="45" r="10" className="vrLensB" />
+        <path d="M16 46C34 20 86 20 104 46" className="vrBand" />
+      </svg>
+      <div className="sceneGlow" />
+    </div>
+  );
+}
+
+function AnimatedSymbol({ game }) {
+  if (game === "droneArena") return <Drone3D />;
+  if (game === "vr") return <VR3D />;
+  if (game === "robotSoccer") return <Robot3D />;
+  if (game === "droneTrack") return <img src="/assets/drone-arena.png" alt="Drone track" className="symbolImage" />;
+  return <img src="/assets/robot-soccer.png" alt="Ice hockey" className="symbolImage" />;
+}
+
+function LoginPanel({ onSuccess, onClose }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await safeFetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        timeoutMs: 10000
+      });
+      onSuccess();
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="loginOverlay">
+      <div className="loginCard">
+        <h3>Admin Login</h3>
+        <p>Login once. Session stays active.</p>
+        <label>
+          Username
+          <input value={username} onChange={(e) => setUsername(e.target.value)} />
+        </label>
+        <label>
+          Password
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
+        </label>
+        {error && <div className="status error">{error}</div>}
+        <div className="actions">
+          <button className="cta" onClick={submit} disabled={busy}>{busy ? "Logging in..." : "Login"}</button>
+          <button className="adminButton" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -70,7 +157,8 @@ export default function Page() {
   const [status, setStatus] = useState("Loading live data...");
   const [statusError, setStatusError] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
-  const [adminSecret, setAdminSecret] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [form, setForm] = useState({
     playerId: "",
     playerName: "",
@@ -91,16 +179,17 @@ export default function Page() {
       const cached = localStorage.getItem("techfest_cache");
       if (cached) {
         setEntries(JSON.parse(cached));
-        setStatus("Network issue: showing cached data backup.");
+        setStatus("Mongo/network issue: showing cached backup.");
       } else {
         setEntries(FALLBACK_DATA);
-        setStatus("Network issue: showing emergency fallback data.");
+        setStatus("Mongo/network issue: showing emergency fallback data.");
       }
       setStatusError(true);
     }
   };
 
   useEffect(() => {
+    setIsAdmin(localStorage.getItem("tf_admin_ok") === "1");
     refresh();
     const timer = setInterval(refresh, 15000);
     return () => clearInterval(timer);
@@ -116,10 +205,7 @@ export default function Page() {
       await safeFetch("/api/entries", {
         method: "POST",
         timeoutMs: 10000,
-        headers: {
-          "Content-Type": "application/json",
-          "x-admin-secret": adminSecret
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           playerId: form.playerId,
           playerName: form.playerName,
@@ -142,14 +228,7 @@ export default function Page() {
   const deleteEntry = async () => {
     try {
       const encodedId = encodeURIComponent(`${form.game}__${form.playerId.toUpperCase()}`);
-      await safeFetch(`/api/entries/${encodedId}`, {
-        method: "DELETE",
-        timeoutMs: 10000,
-        headers: {
-          "x-admin-secret": adminSecret
-        }
-      });
-
+      await safeFetch(`/api/entries/${encodedId}`, { method: "DELETE", timeoutMs: 10000 });
       setStatus("Entry deleted.");
       setStatusError(false);
       await refresh();
@@ -160,17 +239,49 @@ export default function Page() {
     }
   };
 
+  const handleAdminClick = () => {
+    if (isAdmin) {
+      setAdminOpen((v) => !v);
+      return;
+    }
+    setShowLogin(true);
+  };
+
+  const handleLoginSuccess = () => {
+    localStorage.setItem("tf_admin_ok", "1");
+    setIsAdmin(true);
+    setAdminOpen(true);
+    setShowLogin(false);
+    setStatus("Admin session active.");
+    setStatusError(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await safeFetch("/api/auth/logout", { method: "POST", timeoutMs: 8000 });
+    } catch {
+      // Intentionally ignored to avoid UI interruption during demo.
+    }
+    localStorage.removeItem("tf_admin_ok");
+    setIsAdmin(false);
+    setAdminOpen(false);
+    setStatus("Admin session closed.");
+    setStatusError(false);
+  };
+
   return (
     <main className="screen page">
+      <div className="ambientLight" />
       <div className="shell">
         <section className="topBar">
           <div className="titleBlock">
             <h1>TECH FEST 2026</h1>
-            <p>Gaming Zone Leaderboard | Priority: Drone Arena, VR, Robot Soccer</p>
+            <p>Priority Boards: Drone Arena, VR, Robot Soccer</p>
           </div>
-          <button className="adminButton" onClick={() => setAdminOpen((open) => !open)}>
-            {adminOpen ? "Close Admin" : "Open Admin"}
-          </button>
+          <div className="actions">
+            <button className="adminButton" onClick={handleAdminClick}>{isAdmin ? (adminOpen ? "Close Admin" : "Open Admin") : "Admin Login"}</button>
+            {isAdmin && <button className="warn" onClick={handleLogout}>Logout</button>}
+          </div>
         </section>
 
         <section className="tabs">
@@ -178,12 +289,7 @@ export default function Page() {
             const g = GAMES[id];
             const active = id === game;
             return (
-              <button
-                key={id}
-                className={`tab ${active ? "active" : ""}`}
-                style={{ borderColor: active ? g.accent : "rgba(255,255,255,.2)" }}
-                onClick={() => setGame(id)}
-              >
+              <button key={id} className={`tab ${active ? "active" : ""}`} style={{ borderColor: active ? g.accent : "rgba(255,255,255,.2)", boxShadow: active ? `0 0 24px ${g.accent}55` : "none" }} onClick={() => setGame(id)}>
                 <span>{g.short}</span>
                 <strong>{entries.filter((entry) => entry.game === id).length}</strong>
               </button>
@@ -191,11 +297,8 @@ export default function Page() {
           })}
         </section>
 
-        <section className="banner" style={{ borderColor: `${gameMeta.accent}77`, background: `linear-gradient(120deg, ${gameMeta.panel}, rgba(0,0,0,.35))` }}>
-          <div className="symbol3d" style={{ border: `1px solid ${gameMeta.accent}99` }}>
-            {currentSymbol(game)}
-            <div className="orbitRing" style={{ borderColor: `${gameMeta.accent}99` }} />
-          </div>
+        <section className="banner" style={{ borderColor: `${gameMeta.accent}99`, background: `linear-gradient(120deg, ${gameMeta.panel}, rgba(0,0,0,.28))` }}>
+          <div className="symbol3d"><AnimatedSymbol game={game} /></div>
           <div>
             <h2 style={{ color: gameMeta.accent }}>{gameMeta.title}</h2>
             <p>{gameMeta.subtitle}</p>
@@ -205,7 +308,7 @@ export default function Page() {
 
         <section className="podium">
           {top3.map((entry, idx) => (
-            <article key={entry?.playerId || idx} className="podiumCard" style={{ minHeight: idx === 1 ? 250 : 220 }}>
+            <article key={entry?.playerId || idx} className={`podiumCard ${idx === 1 ? "champ" : ""}`} style={{ minHeight: idx === 1 ? 250 : 220, borderColor: `${gameMeta.accent}77` }}>
               <div>{idx === 1 ? "CHAMPION" : idx === 0 ? "2ND" : "3RD"}</div>
               <h3>{entry?.playerName || "TBD"}</h3>
               <strong style={{ color: gameMeta.accent }}>{entry?.score ?? 0}</strong>
@@ -236,16 +339,12 @@ export default function Page() {
 
         <p className={`status ${statusError ? "error" : ""}`}>{status}</p>
 
-        {adminOpen && (
+        {adminOpen && isAdmin && (
           <section className="drawer">
             <h3>Admin Controls</h3>
-            <p className="small">Use admin secret (from env) for add/update/delete. API logs go to Vercel logs with request IDs.</p>
+            <p className="small">No repeated secret typing. Login once, then use controls directly.</p>
 
             <div className="grid2">
-              <label>
-                Admin Secret
-                <input type="password" value={adminSecret} onChange={(event) => setAdminSecret(event.target.value)} placeholder="Enter ADMIN_SECRET" />
-              </label>
               <label>
                 Game
                 <select value={form.game} onChange={(event) => setForm((old) => ({ ...old, game: event.target.value }))}>
@@ -284,6 +383,8 @@ export default function Page() {
           </section>
         )}
       </div>
+
+      {showLogin && <LoginPanel onSuccess={handleLoginSuccess} onClose={() => setShowLogin(false)} />}
     </main>
   );
 }
